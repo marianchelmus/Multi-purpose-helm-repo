@@ -20,12 +20,12 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.frontendService.port }}
               protocol: TCP
           volumeMounts:
-            - name: html
+            - name: {{ include "hello-world-nginx.fullname" . }}-html
               mountPath: /usr/share/nginx/html
       volumes:
-        - name: html
+        - name: {{ include "hello-world-nginx.fullname" . }}-html
           configMap:
-            name: hello-world-html
+            name: {{ include "hello-world-nginx.fullname" . }}-html
