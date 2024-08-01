@@ -1,0 +1,57 @@
+stages:
+  - lint
+  - sync
+
+variables:
+  HELM_VERSION: "v3.15.3" # Specify your Helm version
+  MEGALINTER_VERSION: "4.2.0" # Specify your MegaLinter version
+  ARGOCD_SERVER: "https://localhost:8080" # Replace with your ArgoCD server URL
+  ARGOCD_PROJECT: "default" # Replace with your ArgoCD project
+  ARGOCD_APP_NAME: "redis-chart" # Replace with your ArgoCD application name
+
+# Define the linting job
+lint:
+  stage: lint
+  script:
+    - echo "Installing Helm..."
+    - mkdir -p ~/bin && curl -fsSL https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar xzf - -C ~/bin --strip-components=1 linux-amd64/helm
+    - echo " Adding Helm to PATH..."
+    - echo "export PATH=$HOME/bin:$PATH" >> ~/.bashrc && source ~/.bashrc
+    - echo "Linting Helm chart..."
+    - pwd
+    - helm lint ./
+  allow_failure: false # Ensure this job must succeed
+
+mega-linter:
+  stage: lint
+  # You can override Mega-Linter flavor used to have faster performances
+  # More info at https://megalinter.github.io/flavors/
+  image: oxsecurity/megalinter:v7
+  script: [ "true" ]
+  variables:
+    # All available variables are described in documentation
+    # https://megalinter.github.io/configuration/
+    DEFAULT_WORKSPACE: $CI_PROJECT_DIR
+  artifacts:
+    when: always
+    paths:
+      - megalinter-reports
+    expire_in: 1 week
+  tags:
+    - megalinter
+
+# Define the sync job
+sync:
+  stage: sync
+  script:
+    - echo "Syncing with ArgoCD..."
+    - |
+      curl -s -k -X POST "$ARGOCD_SERVER/api/v1/applications/$ARGOCD_APP_NAME/sync" \
+      -H "Authorization: Bearer $ARGOCD_PASSWORD" \
+      -H "Content-Type: application/json" \
+      -d '{"revision": "HEAD"}'
+  only:
+    - main # Or your preferred branch
+  when: on_success
+  needs:
+    - lint # This ensures the sync job only runs if linting is successful

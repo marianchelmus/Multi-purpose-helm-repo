@@ -1,0 +1,19 @@
+Create a helm chart which has:
+- a deployment
+- a service
+- a service monitor
+
+The deployment also needs to have a basic deployment of Redis with service
+
+Requirements:
+- Secrets needs to be imported from env vars - first import them using helm, then import them trough ArgoCD
+- All variables needs to be configurable from values.yaml and should have default values
+- All yaml must have documentation
+- Deployment needs to have resource configs like limits / requests
+- Ports needs to be configurable
+- Focus on TCP socket testing
+- Helm chart should be consumed by ArgoCD
+- Use helm lint / megalinter
+- Make it dinamically
+- No hardcoded stuff
+- All deployments and services should use labels
