@@ -1,21 +1,33 @@
+{{- if .Values.redisDeployment.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "hello-world-nginx.fullname" . }}-redis
+  name: {{ include "hello-world-nginx.fullname" . }}-{{ .Values.redisDeployment.name }}
   labels:
+    app.kubernetes.io/component: {{ .Values.redisDeployment.name }}
     {{- include "hello-world-nginx.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.redisDeployment.replicaCount }}
   selector:
     matchLabels:
-      app: redis
+      {{- include "hello-world-nginx.selectorLabels" . | nindent 6 }}
+      app: {{ .Values.redisDeployment.name }}
   template:
     metadata:
       labels:
-        app: redis
+        {{- include "hello-world-nginx.selectorLabels" . | nindent 8 }}
+        app: {{ .Values.redisDeployment.name }}
     spec:
       containers:
-        - name: redis
-          image: redis:latest
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.redisDeployment.image.repository }}:{{ .Values.redisDeployment.image.tag }}"
           ports:
-            - containerPort: 6379
+            - containerPort: {{ .Values.redisDeployment.containerPort }}
+          resources:
+            requests:
+              cpu: "{{ .Values.resources.requests.cpu }}"
+              memory: "{{ .Values.resources.requests.memory }}"        
+            limits:
+              cpu: "{{ .Values.resources.limits.cpu }}"
+              memory: "{{ .Values.resources.limits.memory }}"
+{{- end }}

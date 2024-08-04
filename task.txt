@@ -17,3 +17,22 @@ Requirements:
 - Make it dynamically
 - No hardcoded stuff
 - All deployments and services should use labels
+
+
+appVersion: "1.16.0" // tagged versoion for docker container 
+
+- add secrets.yaml 
+- add config file for pod limits 
+- volume mount readOnly type | DONE
+- volume mount subPath
+- integrate secret environement to lookup env. variables 
+- redis should contain a configmap 
+- new service monitor to scrap metrics 
+- metallb - check this out 
+- tpl lookup for ports
+
+- env variables should be taken from secret file env / tpl lookup and it should contain ifs 
+- all deployments: if deployment is true - on all | default is true | DONE
+
+- in backend service new port called metrics should be added and used by the metrics service to connect to the pod 
+

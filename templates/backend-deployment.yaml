@@ -1,26 +1,40 @@
+{{- if .Values.backendDeployment.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "hello-world-nginx.fullname" . }}-backend
   labels:
+    app.kubernetes.io/component: {{ .Values.backendDeployment.name }}
     {{- include "hello-world-nginx.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.backendDeployment.replicaCount }}
   selector:
     matchLabels:
-      app: backend
+      {{- include "hello-world-nginx.selectorLabels" . | nindent 6 }}
+      app: {{ .Values.backendDeployment.name }}
   template:
     metadata:
       labels:
-        app: backend
+        app: {{ .Values.backendDeployment.name }}
+        {{- include "hello-world-nginx.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-      - name: backend
-        image: registry.marianchelmus.ro/hello-world-service:latest
+      - name: {{ .Values.backendDeployment.name }}
+        image: "{{ .Values.backendDeployment.image.repository }}/{{ .Values.backendDeployment.image.name }}:{{ .Values.backendDeployment.image.tag }}"
         ports:
-        - containerPort: 5000
+        - containerPort: {{ .Values.backendDeployment.containerPort }}
         env:
-          - name: REDIS_HOST
-            value: {{ include "hello-world-nginx.fullname" . }}-redis
+          {{- range .Values.envVariables }}
+          - name: {{ .name }}
+            value: {{ tpl .value $ | quote }}
+          {{- end }}
+        resources:
+          requests:
+            cpu: "{{ .Values.resources.requests.cpu }}"
+            memory: "{{ .Values.resources.requests.memory }}"        
+          limits:
+            cpu: "{{ .Values.resources.limits.cpu }}"
+            memory: "{{ .Values.resources.limits.memory }}"
       imagePullSecrets:
-      - name: regcred
+      - name: {{ .Values.imagePullSecret }}
+{{- end }}

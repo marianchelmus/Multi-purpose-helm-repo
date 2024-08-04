@@ -9,11 +9,10 @@ data:
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Hello World Page</title>
         <script>
             async function fetchMessage() {
                 try {
-                    const response = await fetch('http://localhost:5000'); 
+                    const response = await fetch('http://localhost:{{ .Values.backendService.port }}'); 
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
@@ -29,7 +28,7 @@ data:
         </script>
     </head>
     <body>
-        <h1>Hello World Page</h1>
+        <p>This is served from {{ include "hello-world-nginx.fullname" . }}-frontend. Cache will be regenerated every minute</p>
         <p id="message">Loading...</p>
     </body>
     </html>

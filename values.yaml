@@ -1,4 +1,18 @@
-replicaCount: 1
+environment: dev
+
+envVariables:
+  - name: REDIS_HOST
+    value: "{{ include \"hello-world-nginx.fullname\" . }}-redis"
+  - name: BACKEND_PORT
+    value: "{{ .Values.backendService.port }}"
+
+resources:
+  requests:
+    cpu: "100m"  # 100 milliCPU
+    memory: "256Mi"  # 256 mebibytes  
+  limits:
+    cpu: "100m"  # 100 milliCPU
+    memory: "256Mi"  # 256 mebibytes
 
 image:
   repository: nginx
@@ -6,20 +20,59 @@ image:
   pullPolicy: IfNotPresent
 
 frontendService:
-  type: NodePort
+  enabled: true
+  name: frontend
   port: 80
+  targetPort: 80
+  nodePort: 32700
+  type: NodePort
+
+frontendDeployment:
+  enabled: true
+  name: frontend
+  replicaCount: 1
+  portName: http
+  port: 80
+  portProtocol: TCP
+  htmlVolume:
+    name: html
+    readOnly: true
+    mountPath: /usr/share/nginx/html
 
 backendService:
-  port: 80
+  enabled: true
+  name: backend
+  port: 5000
   targetPort: 5000
+  nodePort: 32701
+  type: NodePort
+  protocol: TCP
+  portName: http
 
-ingress:
-  enabled: false
-  annotations: {}
-  hosts:
-    - host: chart-example.local
-      paths: []
-  tls: []
+backendDeployment:
+  enabled: true
+  name: backend
+  replicaCount: 1
+  image:
+    repository: registry.marianchelmus.ro
+    name: hello-world-service
+    tag: latest
+  containerPort: 5000
+
+redisDeployment:
+  enabled: true
+  name: redis
+  replicaCount: 1
+  image:
+    repository: redis
+    tag: latest
+  containerPort: 6379
+
+redisService:
+  enabled: true
+  name: redis
+  
+imagePullSecret: regcred
 
 resource: {}
 

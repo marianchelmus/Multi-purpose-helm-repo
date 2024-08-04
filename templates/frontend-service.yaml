@@ -1,15 +1,19 @@
+{{- if .Values.frontendService.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "hello-world-nginx.fullname" . }}
+  name: {{ include "hello-world-nginx.fullname" . }}-{{ .Values.frontendService.name }}
   labels:
+    app.kubernetes.io/component: {{ .Values.frontendService.name }}
     {{- include "hello-world-nginx.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.frontendService.type }}
   ports:
     - port: {{ .Values.frontendService.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
+      targetPort: {{ .Values.frontendService.targetPort }}
+      protocol: {{ .Values.frontendService.protocol }}
+      name: {{ .Values.frontendService.portName }}
+      nodePort: {{ .Values.frontendService.nodePort }}
   selector:
     {{- include "hello-world-nginx.selectorLabels" . | nindent 4 }}
+{{- end }}

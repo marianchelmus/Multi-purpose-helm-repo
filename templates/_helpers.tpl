@@ -16,9 +16,9 @@ If release name contains chart name it will be used as a full name.
 {{- else }}
 {{- $name := default .Chart.Name .Values.nameOverride }}
 {{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- printf "%s-%s" .Values.environment .Release.Name  | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- printf "%s-%s-%s" .Values.environment .Release.Name $name  | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -34,12 +34,11 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "hello-world-nginx.labels" -}}
-helm.sh/chart: {{ include "hello-world-nginx.chart" . }}
 {{ include "hello-world-nginx.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
+app.kubernetes.io/part-of: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
@@ -47,7 +46,6 @@ Selector labels
 */}}
 {{- define "hello-world-nginx.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "hello-world-nginx.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*

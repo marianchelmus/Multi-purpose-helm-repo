@@ -1,14 +1,18 @@
+{{- if .Values.backendService.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "hello-world-nginx.fullname" . }}-backend
   labels:
+    app.kubernetes.io/component: {{ .Values.backendService.name }}
     {{- include "hello-world-nginx.labels" . | nindent 4 }}
 spec:
   selector:
-    app: backend
+    app: {{ .Values.backendService.name }}
   ports:
-    - protocol: TCP
+    - protocol: {{ .Values.backendService.Protocol}}
       port: {{ .Values.backendService.port }}
       targetPort: {{ .Values.backendService.targetPort }}
-  type: LoadBalancer  # Use ClusterIP or NodePort if you don’t need external access
+      nodePort: {{ .Values.backendService.nodePort}}
+  type: {{ .Values.backendService.type }} 
+{{- end }}
