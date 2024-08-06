@@ -1,0 +1,62 @@
+{{- if .Values.backendDeployment.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hello-world.fullname" . }}-backend
+  labels:
+    app.kubernetes.io/component: {{ .Values.backendDeployment.name }}
+    {{- include "hello-world.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.backendDeployment.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "hello-world.selectorLabels" . | nindent 6 }}
+      app: {{ .Values.backendDeployment.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.backendDeployment.name }}
+        {{- include "hello-world.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ .Values.backendDeployment.name }}
+        image: "{{ .Values.backendDeployment.image.repository }}/{{ .Values.backendDeployment.image.name }}:{{ .Values.backendDeployment.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.backendDeployment.containerPort }}
+        env:
+          {{- range .Values.envVariables }}
+          {{- if eq .valueFrom "secretKeyRef" }}
+          - name: {{ .name }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $.Values.secret.name }}
+                key: {{ $.Values.secret.key }}
+          {{- else }}
+          - name: {{ .name }}
+            value: {{ tpl .value $ | quote }}
+          {{- end }}
+          {{- end }}
+        resources:
+          requests:
+            cpu: "{{ .Values.resources.requests.cpu }}"
+            memory: "{{ .Values.resources.requests.memory }}"        
+          limits:
+            cpu: "{{ .Values.resources.limits.cpu }}"
+            memory: "{{ .Values.resources.limits.memory }}"
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.backendDeployment.containerPort }}
+          initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.probes.liveness.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds | default 5 }}
+          failureThreshold: {{ .Values.probes.liveness.failureThreshold | default 3 }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.backendDeployment.containerPort }}
+          initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.probes.readiness.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds | default 5 }}
+          failureThreshold: {{ .Values.probes.readiness.failureThreshold | default 3 }}
+      imagePullSecrets:
+      - name: {{ include "hello-world.fullname" . }}-{{ .Values.imagePullSecret }}
+{{- end }}

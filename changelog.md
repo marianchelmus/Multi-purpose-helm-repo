@@ -1,11 +1,9 @@
 # Changelog
 
 - **Removed Hardcoded Values:**
-
   - All hardcoded values have been removed from configurations.
 
 - **Fixed Labels for All Services/Deployments:**
-
   - **Service Example:**
     ```yaml
     metadata:
@@ -28,7 +26,6 @@
     ```
 
 - **Added VolumeMount ReadOnly Type Variable:**
-
   - Added the `readOnly` field to `volumeMounts`:
     ```yaml
     volumeMounts:
@@ -38,11 +35,9 @@
     ```
 
 - **Added Conditionals for All Services/Deployments:**
-
   - Implemented conditionals to handle different configurations.
 
 - **Added `tpl` Lookup for Environment Variables:**
-
   - Used `tpl` to dynamically look up environment variables:
     ```yaml
     env:
@@ -53,24 +48,22 @@
     ```
 
 - **Added Resource Limitations in `values.yaml`:**
-
   - Added resource constraints to `values.yaml`:
-
     ```yaml
     resources:
       limits:
-        cpu: { { .Values.resources.limits.cpu } }
-        memory: { { .Values.resources.limits.memory } }
+        cpu: {{ .Values.resources.limits.cpu }}
+        memory: {{ .Values.resources.limits.memory }}
       requests:
-        cpu: { { .Values.resources.requests.cpu } }
-        memory: { { .Values.resources.requests.memory } }
+        cpu: {{ .Values.resources.requests.cpu }}
+        memory: {{ .Values.resources.requests.memory }}
     ```
 
     ```yaml
     resources:
       requests:
         cpu: "{{ .Values.resources.requests.cpu }}"
-        memory: "{{ .Values.resources.requests.memory }}"
+        memory: "{{ .Values.resources.requests.memory }}"        
       limits:
         cpu: "{{ .Values.resources.limits.cpu }}"
         memory: "{{ .Values.resources.limits.memory }}"

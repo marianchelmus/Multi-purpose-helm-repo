@@ -1,43 +1,38 @@
 environment: dev
 
+dockerConfigJson: base64encoded-value-of-$(cat ~/.docker/config.json)
+
+probes:
+  liveness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+secret:
+  name: super-secret
+  key: password
+
 envVariables:
   - name: REDIS_HOST
-    value: "{{ include \"hello-world-nginx.fullname\" . }}-redis"
+    value: "{{ include \"hello-world.fullname\" . }}-redis"
   - name: BACKEND_PORT
     value: "{{ .Values.backendService.port }}"
+  - name: SECRET_DECODED
+    valueFrom: "secretKeyRef"
 
 resources:
   requests:
-    cpu: "100m"  # 100 milliCPU
-    memory: "256Mi"  # 256 mebibytes  
+    cpu: "100m"
+    memory: "256Mi"
   limits:
-    cpu: "100m"  # 100 milliCPU
-    memory: "256Mi"  # 256 mebibytes
-
-image:
-  repository: nginx
-  tag: "latest"
-  pullPolicy: IfNotPresent
-
-frontendService:
-  enabled: true
-  name: frontend
-  port: 80
-  targetPort: 80
-  nodePort: 32700
-  type: NodePort
-
-frontendDeployment:
-  enabled: true
-  name: frontend
-  replicaCount: 1
-  portName: http
-  port: 80
-  portProtocol: TCP
-  htmlVolume:
-    name: html
-    readOnly: true
-    mountPath: /usr/share/nginx/html
+    cpu: "100m"
+    memory: "256Mi"
 
 backendService:
   enabled: true
@@ -47,7 +42,6 @@ backendService:
   nodePort: 32701
   type: NodePort
   protocol: TCP
-  portName: http
 
 backendDeployment:
   enabled: true
@@ -67,18 +61,17 @@ redisDeployment:
     repository: redis
     tag: latest
   containerPort: 6379
+  volumeMount:
+    name: redis-config-volume
+    mountPath: /usr/local/etc/redis/redis.conf
+    subPath: redis.conf
+    readOnly: true
+  configMap:
+    enabled: true
+    name: redis-config
 
 redisService:
   enabled: true
   name: redis
-  
+
 imagePullSecret: regcred
-
-resource: {}
-
-nodeSelector: {}
-
-tolerations: {}
-
-affinity: {}
-

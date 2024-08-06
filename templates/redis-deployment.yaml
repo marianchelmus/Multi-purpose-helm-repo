@@ -2,32 +2,60 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "hello-world-nginx.fullname" . }}-{{ .Values.redisDeployment.name }}
+  name: {{ include "hello-world.fullname" . }}-{{ .Values.redisDeployment.name }}
   labels:
     app.kubernetes.io/component: {{ .Values.redisDeployment.name }}
-    {{- include "hello-world-nginx.labels" . | nindent 4 }}
+    {{- include "hello-world.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.redisDeployment.replicaCount }}
   selector:
     matchLabels:
-      {{- include "hello-world-nginx.selectorLabels" . | nindent 6 }}
+      {{- include "hello-world.selectorLabels" . | nindent 6 }}
       app: {{ .Values.redisDeployment.name }}
   template:
     metadata:
       labels:
-        {{- include "hello-world-nginx.selectorLabels" . | nindent 8 }}
+        {{- include "hello-world.selectorLabels" . | nindent 8 }}
         app: {{ .Values.redisDeployment.name }}
     spec:
       containers:
-        - name: {{ .Chart.Name }}
+        - name: redis
           image: "{{ .Values.redisDeployment.image.repository }}:{{ .Values.redisDeployment.image.tag }}"
           ports:
             - containerPort: {{ .Values.redisDeployment.containerPort }}
           resources:
             requests:
               cpu: "{{ .Values.resources.requests.cpu }}"
-              memory: "{{ .Values.resources.requests.memory }}"        
+              memory: "{{ .Values.resources.requests.memory }}"
             limits:
               cpu: "{{ .Values.resources.limits.cpu }}"
               memory: "{{ .Values.resources.limits.memory }}"
+          {{- if .Values.redisDeployment.configMap.enabled }}
+          command: [ "redis-server", "{{ .Values.redisDeployment.volumeMount.mountPath}}" ]
+          volumeMounts:
+            - name: {{ .Values.redisDeployment.volumeMount.name }}
+              mountPath: {{ .Values.redisDeployment.volumeMount.mountPath }}
+              subPath: {{ .Values.redisDeployment.volumeMount.subPath }}
+              readOnly: {{ .Values.redisDeployment.volumeMount.readOnly }}
+          {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.redisDeployment.containerPort }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold | default 3 }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.redisDeployment.containerPort }}
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold | default 3 }}
+      {{- if .Values.redisDeployment.configMap.enabled }}
+      volumes:
+        - name: {{ .Values.redisDeployment.volumeMount.name }}
+          configMap:
+            name: {{ include "hello-world.fullname" . }}-{{ .Values.redisDeployment.configMap.name }}
+      {{- end }}
 {{- end }}

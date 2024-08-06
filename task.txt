@@ -36,3 +36,8 @@ appVersion: "1.16.0" // tagged versoion for docker container
 
 - in backend service new port called metrics should be added and used by the metrics service to connect to the pod 
 
+
+
+// {{environment}} - {{ aplicationName }} - hashul
+// liveness probe si readiness probe -> test TCP socket (deployments) 
+// initialDelaySecond & periodSecond 

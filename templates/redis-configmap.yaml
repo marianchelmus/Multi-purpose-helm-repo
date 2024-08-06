@@ -1,0 +1,18 @@
+{{- if .Values.redisDeployment.enabled }}
+{{- if .Values.redisDeployment.configMap.enabled }}  
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hello-world.fullname" . }}-{{ .Values.redisDeployment.configMap.name }}
+  labels:
+    app.kubernetes.io/component: {{ .Values.redisDeployment.name }}
+    {{- include "hello-world.labels" . | nindent 4 }}
+data:
+  redis.conf: |
+    # Redis configuration settings
+    maxmemory 256mb
+    maxmemory-policy allkeys-lru
+    save 60 10000
+    appendonly yes
+{{- end }}
+{{- end }}
