@@ -36,10 +36,13 @@ spec:
             value: {{ tpl .value $ | quote }}
           {{- end }}
           {{- end }}
+        envFrom:
+          - secretRef:
+              name: {{ .Values.backendDeployment.secretEnvName }}
         resources:
           requests:
             cpu: "{{ .Values.resources.requests.cpu }}"
-            memory: "{{ .Values.resources.requests.memory }}"        
+            memory: "{{ .Values.resources.requests.memory }}"
           limits:
             cpu: "{{ .Values.resources.limits.cpu }}"
             memory: "{{ .Values.resources.limits.memory }}"

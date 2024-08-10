@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "hello-world.fullname" . }}-{{ .Values.serviceMonitor.name }}
+  labels:
+    {{- include "hello-world.labels" . | nindent 4 }}
+spec:
+  endpoints:
+  - interval: 30s
+    port: {{ .Values.backendService.port | quote }}
+  selector:
+    matchLabels:
+      {{- include "hello-world.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: {{ .Values.backendService.name }}

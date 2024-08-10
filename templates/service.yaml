@@ -6,9 +6,13 @@ metadata:
   labels:
     app.kubernetes.io/component: {{ .Values.backendService.name }}
     {{- include "hello-world.labels" . | nindent 4 }}
+  {{- if and (eq .Values.backendService.type "LoadBalancer") .Values.backendService.loadBalancerIP }}
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: {{ .Values.backendService.loadBalancerIP }}
+  {{- end }}        
 spec:
   selector:
-    app: {{ .Values.backendService.name }}
+    app.kubernetes.io/component: {{ .Values.backendService.name }}
   ports:
     - protocol: {{ .Values.backendService.protocol }}
       port: {{ .Values.backendService.port }}

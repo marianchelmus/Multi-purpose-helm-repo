@@ -4,7 +4,7 @@ metadata:
   name: {{ include "hello-world.fullname" . }}-{{ .Values.imagePullSecret }}
   labels:
     app.kubernetes.io/component: {{ .Values.imagePullSecret }}
-    {{- include "hello-world.labels" . | nindent 4 }}
+    {{- include "hello-world.labels" . | nindent 4 }}    
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: {{ .Values.dockerConfigJson | quote }}
