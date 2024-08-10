@@ -1,22 +1,29 @@
-{{- if .Values.backendService.enabled }}
+{{- if .Values.appService.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "hello-world.fullname" . }}-backend
+  name: {{ include "generic-app.fullname" . }}-{{ .Values.appService.name }}
   labels:
-    app.kubernetes.io/component: {{ .Values.backendService.name }}
-    {{- include "hello-world.labels" . | nindent 4 }}
-  {{- if and (eq .Values.backendService.type "LoadBalancer") .Values.backendService.loadBalancerIP }}
+    app.kubernetes.io/name: {{ include "generic-app.name" . }}
+    app.kubernetes.io/component: {{ .Values.appService.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version | quote }}
+    {{- include "generic-app.labels" . | nindent 4 }}
+  {{- if and (eq .Values.appService.type "LoadBalancer") .Values.appService.loadBalancerIP }}
   annotations:
-    metallb.universe.tf/loadBalancerIPs: {{ .Values.backendService.loadBalancerIP }}
-  {{- end }}        
+    metallb.universe.tf/loadBalancerIPs: {{ .Values.appService.loadBalancerIP }}
+  {{- end }}
 spec:
   selector:
-    app.kubernetes.io/component: {{ .Values.backendService.name }}
+    app.kubernetes.io/name: {{ include "generic-app.name" . }}
+    app.kubernetes.io/component: {{ .Values.appService.name }}
   ports:
-    - protocol: {{ .Values.backendService.protocol }}
-      port: {{ .Values.backendService.port }}
-      targetPort: {{ .Values.backendService.targetPort }}
-      nodePort: {{ .Values.backendService.nodePort }}
-  type: {{ .Values.backendService.type }}
+    - protocol: {{ .Values.appService.protocol }}
+      port: {{ .Values.appService.port }}
+      targetPort: {{ .Values.appService.targetPort }}
+      {{- if .Values.appService.nodePort }}
+      nodePort: {{ .Values.appService.nodePort }}
+      {{- end }}
+  type: {{ .Values.appService.type }}
 {{- end }}

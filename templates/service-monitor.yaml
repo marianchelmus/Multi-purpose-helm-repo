@@ -1,14 +1,19 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "hello-world.fullname" . }}-{{ .Values.serviceMonitor.name }}
+  namespace: monitoring  # Namespace where Prometheus is looking for ServiceMonitors
+  name: {{ include "generic-app.fullname" . }}-{{ .Values.serviceMonitor.name }}
   labels:
-    {{- include "hello-world.labels" . | nindent 4 }}
+    {{- include "generic-app.labels" . | nindent 4 }}
 spec:
   endpoints:
-  - interval: 30s
-    port: {{ .Values.backendService.port | quote }}
+    - interval: 30s
+      port: {{ .Values.appService.port | quote }}  # Ensure this matches the Service port
+      path: /metrics  # Assuming Prometheus metrics are exposed on /metrics
   selector:
     matchLabels:
-      {{- include "hello-world.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: {{ .Values.backendService.name }}
+      {{- include "generic-app.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: {{ .Release.Name }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}  # Namespace where your application is deployed

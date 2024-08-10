@@ -1,28 +1,35 @@
-{{- if .Values.backendDeployment.enabled }}
+{{- if .Values.appDeployment.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "hello-world.fullname" . }}-backend
+  name: {{ include "generic-app.fullname" . }}-app
   labels:
-    app.kubernetes.io/component: {{ .Values.backendDeployment.name }}
-    {{- include "hello-world.labels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ include "generic-app.name" . }}
+    app.kubernetes.io/component: {{ .Values.appDeployment.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version | quote }}
+    {{- include "generic-app.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.backendDeployment.replicaCount }}
+  replicas: {{ .Values.appDeployment.replicaCount }}
   selector:
     matchLabels:
-      {{- include "hello-world.selectorLabels" . | nindent 6 }}
-      app: {{ .Values.backendDeployment.name }}
+      app.kubernetes.io/name: {{ include "generic-app.name" . }}
+      app.kubernetes.io/component: {{ .Values.appDeployment.name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.backendDeployment.name }}
-        {{- include "hello-world.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: {{ include "generic-app.name" . }}
+        app.kubernetes.io/component: {{ .Values.appDeployment.name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/part-of: {{ .Chart.Name }}
+        app.kubernetes.io/version: {{ .Chart.Version | quote }}
     spec:
       containers:
-      - name: {{ .Values.backendDeployment.name }}
-        image: "{{ .Values.backendDeployment.image.repository }}/{{ .Values.backendDeployment.image.name }}:{{ .Values.backendDeployment.image.tag }}"
+      - name: {{ .Values.appDeployment.name }}
+        image: "{{ .Values.appDeployment.image.repository }}/{{ .Values.appDeployment.image.name }}:{{ .Values.appDeployment.image.tag }}"
         ports:
-        - containerPort: {{ .Values.backendDeployment.containerPort }}
+        - containerPort: {{ .Values.appDeployment.containerPort }}
         env:
           {{- range .Values.envVariables }}
           {{- if eq .valueFrom "secretKeyRef" }}
@@ -38,7 +45,7 @@ spec:
           {{- end }}
         envFrom:
           - secretRef:
-              name: {{ .Values.backendDeployment.secretEnvName }}
+              name: {{ .Values.appDeployment.secretEnvName }}
         resources:
           requests:
             cpu: "{{ .Values.resources.requests.cpu }}"
@@ -48,18 +55,18 @@ spec:
             memory: "{{ .Values.resources.limits.memory }}"
         livenessProbe:
           tcpSocket:
-            port: {{ .Values.backendDeployment.containerPort }}
+            port: {{ .Values.appDeployment.containerPort }}
           initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds | default 30 }}
           periodSeconds: {{ .Values.probes.liveness.periodSeconds | default 10 }}
           timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds | default 5 }}
           failureThreshold: {{ .Values.probes.liveness.failureThreshold | default 3 }}
         readinessProbe:
           tcpSocket:
-            port: {{ .Values.backendDeployment.containerPort }}
+            port: {{ .Values.appDeployment.containerPort }}
           initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds | default 30 }}
           periodSeconds: {{ .Values.probes.readiness.periodSeconds | default 10 }}
           timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds | default 5 }}
           failureThreshold: {{ .Values.probes.readiness.failureThreshold | default 3 }}
       imagePullSecrets:
-      - name: {{ include "hello-world.fullname" . }}-{{ .Values.imagePullSecret }}
+      - name: {{ include "generic-app.fullname" . }}-{{ .Values.imagePullSecret }}
 {{- end }}

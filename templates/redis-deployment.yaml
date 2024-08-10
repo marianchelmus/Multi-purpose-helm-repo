@@ -2,21 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "hello-world.fullname" . }}-{{ .Values.redisDeployment.name }}
+  name: {{ include "generic-app.fullname" . }}-{{ .Values.redisDeployment.name }}
   labels:
-    app.kubernetes.io/component: {{ .Values.redisDeployment.name }}
-    {{- include "hello-world.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+    {{- include "generic-app.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.redisDeployment.replicaCount }}
   selector:
     matchLabels:
-      {{- include "hello-world.selectorLabels" . | nindent 6 }}
-      app: {{ .Values.redisDeployment.name }}
+      {{- include "generic-app.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: redis
   template:
     metadata:
       labels:
-        {{- include "hello-world.selectorLabels" . | nindent 8 }}
-        app: {{ .Values.redisDeployment.name }}
+        {{- include "generic-app.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: redis
     spec:
       containers:
         - name: redis
@@ -31,7 +31,7 @@ spec:
               cpu: "{{ .Values.resources.limits.cpu }}"
               memory: "{{ .Values.resources.limits.memory }}"
           {{- if .Values.redisDeployment.configMap.enabled }}
-          command: [ "redis-server", "{{ .Values.redisDeployment.volumeMount.mountPath}}" ]
+          command: [ "redis-server", "{{ .Values.redisDeployment.volumeMount.mountPath }}" ]
           volumeMounts:
             - name: {{ .Values.redisDeployment.volumeMount.name }}
               mountPath: {{ .Values.redisDeployment.volumeMount.mountPath }}
@@ -56,6 +56,6 @@ spec:
       volumes:
         - name: {{ .Values.redisDeployment.volumeMount.name }}
           configMap:
-            name: {{ include "hello-world.fullname" . }}-{{ .Values.redisDeployment.configMap.name }}
+            name: {{ include "generic-app.fullname" . }}-{{ .Values.redisDeployment.configMap.name }}
       {{- end }}
 {{- end }}

@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ include "hello-world.fullname" . }}-{{ .Values.imagePullSecret }}
+  name: {{ include "generic-app.fullname" . }}-{{ .Values.imagePullSecret }}
   labels:
-    app.kubernetes.io/component: {{ .Values.imagePullSecret }}
-    {{- include "hello-world.labels" . | nindent 4 }}    
+    app.kubernetes.io/component: image-pull-secret
+    {{- include "generic-app.labels" . | nindent 4 }}
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: {{ .Values.dockerConfigJson | quote }}

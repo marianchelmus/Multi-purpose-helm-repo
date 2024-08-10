@@ -2,12 +2,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "hello-world.fullname" . }}-{{ .Values.redisService.name }}
+  name: {{ include "generic-app.fullname" . }}-{{ .Values.redisService.name }}
   labels:
-    {{- include "hello-world.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+    {{- include "generic-app.labels" . | nindent 4 }}
 spec:
   selector:
-    app: {{ .Values.redisService.name }}
+    app.kubernetes.io/component: redis
   ports:
     - protocol: TCP
       port: 6379
