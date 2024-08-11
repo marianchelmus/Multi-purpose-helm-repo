@@ -10,7 +10,7 @@ spec:
     - interval: 10s
       port: {{ .Values.appService.portName | quote }}
       scheme: {{ .Values.appService.portScheme }}
-      path: /metrics
+      path: {{ .Values.appService.metricsPath }}
   selector:
     matchLabels:
       {{- include "generic-app.selectorLabels" . | nindent 6 }}
