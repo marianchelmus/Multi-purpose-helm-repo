@@ -7,16 +7,15 @@ metadata:
     {{- include "generic-app.labels" . | nindent 4 }}
 spec:
   endpoints:
-    - interval: 30s
-      port: {{ .Values.appService.port | quote }}  # Ensure this matches the Service port
-      path: /metrics  # Assuming Prometheus metrics are exposed on /metrics
-      scheme: http
+    - interval: 10s
+      port: {{ .Values.appService.portName | quote }}
+      scheme: {{ .Values.appService.portScheme }}
+      path: /metrics
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "generic-app.name" . }}
+      {{- include "generic-app.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: {{ .Values.appService.name }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/part-of: {{ .Chart.Name }}
-      app.kubernetes.io/version: {{ .Chart.Version | quote }}
   namespaceSelector:
-    any: true
+    matchNames:
+    - {{ .Release.Namespace }}
+

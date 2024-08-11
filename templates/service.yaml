@@ -19,11 +19,9 @@ spec:
     app.kubernetes.io/name: {{ include "generic-app.name" . }}
     app.kubernetes.io/component: {{ .Values.appService.name }}
   ports:
-    - protocol: {{ .Values.appService.protocol }}
+    - name: {{ .Values.appService.portName }}
+      protocol: {{ .Values.appService.protocol }}
       port: {{ .Values.appService.port }}
       targetPort: {{ .Values.appService.targetPort }}
-      {{- if .Values.appService.nodePort }}
-      nodePort: {{ .Values.appService.nodePort }}
-      {{- end }}
   type: {{ .Values.appService.type }}
 {{- end }}
